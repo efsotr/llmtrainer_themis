@@ -99,10 +99,7 @@ if __name__ == '__main__':
         assert len(test_dataset) > 0, "test_dataset must have a length greater than 0"
         
 
-        all_test_prompts.extend([
-            (test_dataset[i], file, i)
-            for i in range(0, len(test_dataset), args.batch_size)
-        ])
+        all_test_prompts.extend([(test_dataset[i], file, i) for i in range(len(test_dataset))])
         all_outputs[file] = [None for _ in range(len(test_dataset))]
 
     cache = Cache(args.cache_dir, args.batch_size)
