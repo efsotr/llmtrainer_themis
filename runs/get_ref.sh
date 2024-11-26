@@ -12,16 +12,21 @@ check_variable() {
     fi
 }
 
+MODEL_DIR={$MODEL_DIR:-"./models/"}
+CHECKPOINT={$CHECKPOINT:-""}
+
 echo ""
-check_variable "DATA_NAME"
+check_variable "MODEL_DIR"
 check_variable "MODEL_NAME"
+check_variable "CHECKPOINT"
+check_variable "DATA_NAME"
 check_variable "PORT"
 
 mkdir -p $1
 
 accelerate launch --main_process_port "$PORT" --config_file ./configs/deepspeed_xgpus_stage0.yaml \
      get_logits.py \
-    --model_id ./models/$MODEL_NAME \
+    --model_id $MODEL_DIR/$MODEL_NAME/$CHECKPOINT \
     --with_efficient_module optimized_module \
     --torch_dtype bfloat16 \
     --bf16 \
