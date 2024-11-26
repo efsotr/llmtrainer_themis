@@ -4,7 +4,7 @@ OMP_NUM_THREADS=8 accelerate launch --main_process_port "$PORT" --config_file ./
      ./train.py \
     --model_id ./models/$MODEL_NAME \
     --with_efficient_module optimized_module \
-    --gradient_checkpointing 1 \
+    --gradient_checkpointing ${gradient_checkpointing:-1} \
     --torch_dtype bfloat16 \
     --bf16 \
     --formated_train_data_cache_path ./cache/${DATA_NAME}.train.json.gz \
@@ -40,7 +40,7 @@ OMP_NUM_THREADS=8 accelerate launch --main_process_port "$PORT" --config_file ./
     --include_tokens_per_second \
     --output_dir $1 \
     --num_train_epochs 1 \
-    --max_length 2048 \
+    --max_length 4096 \
     --seed 0 \
     --run_name $(basename $1) \
     --report_to wandb \
