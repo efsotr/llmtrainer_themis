@@ -92,15 +92,11 @@ if __name__ == '__main__':
         test_dataset = safe_load(os.path.join(dirpath, file))
         if args.prefix_dir:
             test_prefix = safe_load(os.path.join(args.prefix_dir, "prefix." + file))
-            test_prefix = [ex for ex in test_prefix]
-        else:
-            test_prefix = [None] * len(test_dataset)
+            for ex, prefix in zip(test_dataset, test_prefix):
+                ex["prefix"] = prefix
         assert isinstance(test_dataset, list) , "test_dataset must be of type list"
         assert len(test_dataset) > 0, "test_dataset must have a length greater than 0"
         assert len(test_dataset) == len(test_prefix)
-        
-        for ex, prefix in zip(test_dataset, test_prefix):
-            ex["prefix"] = prefix
 
         all_test_prompts.extend([
             (test_dataset[i], file, i)
