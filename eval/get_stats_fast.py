@@ -107,7 +107,7 @@ if __name__ == '__main__':
         assert len(test_dataset) > 0, "test_dataset must have a length greater than 0"
         assert len(test_dataset) == len(test_outputs)
 
-        avg_lengths[file] = sum(sum(map(len, outs)) / len(outs) for outs in test_outputs) / len(test_outputs)
+        avg_lengths[file] = sum(sum(map(len, outs)) / len(outs) + len(prefix) for outs, prefix in zip(test_outputs, test_prefix)) / len(test_outputs)
         def process(inputs):
             from transformers import AutoTokenizer
             tokenizer = AutoTokenizer.from_pretrained(args.model)
