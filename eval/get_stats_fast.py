@@ -53,6 +53,7 @@ if __name__ == '__main__':
     parser.add_argument('--test_dirs', required=True, type=str, help="Testset directory")
     parser.add_argument('--test_files', default=None, type=str, help="Testset filename")
     parser.add_argument('--output_dir', required=True, type=str, help="Output directory")
+    parser.add_argument('--output_filename', default="stats.overall.json", type=str, help="Output filename")
     parser.add_argument('--seed', default=0, type=int)
     args = parser.parse_args(namespace=Namespace())
     args.init()
@@ -177,3 +178,17 @@ if __name__ == '__main__':
 
     for file in all_scores:
         safe_save(all_scores[file], os.path.join(args.output_dir, "stats." + file))
+
+    def mean(x):
+        return sum(x) / len(x)
+
+    avg_mean_scores = {}
+    avg_max_scores = {}
+    for file in all_scores:
+        avg_mean_scores[file] = mean([mean(scores) for scores in all_scores[file]])
+        avg_max_scores[file] = mean([max(scores) for scores in all_scores[file]])
+
+    safe_save({"avg_mean_scores": avg_mean_scores, 
+               "avg_max_scores": avg_max_scores, 
+               "avg_lengths(chars)": avg_lengths}, 
+              os.path.join(args.output_dir, args.output_filename))
