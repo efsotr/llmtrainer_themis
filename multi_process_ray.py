@@ -70,7 +70,7 @@ def multi_process_stream(
     if inputs_len is None:
         inputs_len = len(inputs)
     
-    pbar = tqdm(inputs_len, disable=not enable_tqdm)
+    pbar = tqdm(total=inputs_len, disable=not enable_tqdm)
 
     for i, input in enumerate(inputs):
         input_queue.put(input)
