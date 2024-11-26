@@ -9,6 +9,7 @@ OMP_NUM_THREADS=8 accelerate launch --main_process_port "$PORT" --config_file ./
     --bf16 \
     --formated_train_data_cache_path ./cache_ids/${DATA_NAME}.train.json.gz \
     --formated_dev_data_cache_path ./cache_ids/${DATA_NAME}.dev.json \
+    --ref_cache_path ./cache_logits/${DATA_NAME}.${MODEL_NAME}_logits.pt.gz \
     --prompt_type chat \
     --remove_unused_columns 0 \
     --do_train \
@@ -17,8 +18,8 @@ OMP_NUM_THREADS=8 accelerate launch --main_process_port "$PORT" --config_file ./
     --training_type po \
     --norm_by_len 1 \
     --po_beta $PO_BETA \
-    --po_gamma $PO_GAMMA \
-    --with_ref 0 \
+    --po_gamma 0 \
+    --with_ref 1 \
     --optim adamw_torch \
     --learning_rate $LR \
     --weight_decay 0 \

@@ -1,28 +1,28 @@
 mkdir -p $1
 
 OMP_NUM_THREADS=8 accelerate launch --main_process_port "$PORT" --config_file ./configs/deepspeed_4gpus_stage2_off_o.yaml \
-     train.py \
-    --model_id /data/pretrain/Qwen/Qwen2-7B-Instruct \
+     ./train.py \
+    --model_id ./models/$MODEL_NAME \
     --with_efficient_module optimized_module \
-    --gradient_checkpointing 1 \
+    --gradient_checkpointing ${gradient_checkpointing:-1} \
     --torch_dtype bfloat16 \
     --bf16 \
-    --formated_train_data_cache_path $train_tokenids_path \
-    --formated_dev_data_cache_path $dev_tokenids_path \
-    --prompt_type completion \
+    --formated_train_data_cache_path ./cache_ids/${DATA_NAME}.train.json.gz \
+    --formated_dev_data_cache_path ./cache_ids/${DATA_NAME}.dev.json \
+    --prompt_type chat \
     --remove_unused_columns 0 \
     --do_train \
     --do_eval \
     --check_stage no_ck \
     --training_type sft \
     --optim adamw_torch \
-    --learning_rate 1e-5 \
+    --learning_rate $LR \
     --weight_decay 0 \
     --lr_scheduler_type cosine \
     --warmup_ratio 0.1 \
-    --per_deivce_train_batch_max_tokens 7680 \
-    --batch_tokens_divider 1 \
-    --h_accumulation_steps 1 \
+    --per_deivce_train_batch_max_tokens $per_deivce_train_batch_max_tokens \
+    --batch_tokens_divider $batch_tokens_divider \
+    --h_accumulation_steps $h_accumulation_steps \
     --per_device_eval_batch_size 8 \
     --per_device_train_batch_size 1 \
     --eval_strategy steps \
@@ -35,8 +35,8 @@ OMP_NUM_THREADS=8 accelerate launch --main_process_port "$PORT" --config_file ./
     --include_tokens_per_second \
     --output_dir $1 \
     --num_train_epochs 1 \
-    --max_length $max_length \
+    --max_length 4096 \
     --seed 0 \
     --run_name $(basename $1) \
-    --report_to none \
+    --report_to wandb \
     > $1/training.log 2>&1 
