@@ -1,12 +1,17 @@
 {
     "alpaca_eval.json": {   
         "n": 1,
-        "temperature": 0.9,
+        "temperature": 1,
         "max_tokens": 2048
     }, 
     "arena_hard.json": {
         "n": 1, 
         "temperature": 0,
         "max_tokens": 4096
+    },
+    "uf.dev.json": {
+        "n": 1,
+        "temperature": 1,
+        "max_tokens": 2048
     }
 }
