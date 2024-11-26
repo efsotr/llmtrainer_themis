@@ -1,16 +1,16 @@
 {
-    "ori-uf.dev.json": {
+    "uf.dev.json": {
         "n": 4,
         "max_tokens": 4096,
         "temperature": 1,
-        "top_p": 0.95,
+        "top_p": 1,
         "top_k": -1
     },
-    "ori-uf.train.json.gz": {
+    "uf.train.json.gz": {
         "n": 4,
         "max_tokens": 4096,
         "temperature": 1,
-        "top_p": 0.95,
+        "top_p": 1,
         "top_k": -1
     }
 }
