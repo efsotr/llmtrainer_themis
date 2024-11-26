@@ -11,7 +11,7 @@ from transformers import LlamaTokenizer, AutoTokenizer
 
 from file_IO import can_create_file, safe_load, safe_save
 from multi_process_ray import multi_process
-from tokenize import get_eos
+from tokenize_ids import get_eos
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)

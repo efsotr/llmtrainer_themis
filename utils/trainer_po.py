@@ -15,7 +15,7 @@ from .utils import get_key, to_pt, logger_ids
 from .trainer_base import BaseTrainer
 from .trainer_sft import num_fns
 from optimized_module.crossentropy import EffCrossEntropy
-from tokenize import get_prompt_ids, get_token_ids
+from tokenize_ids import get_prompt_ids, get_token_ids
 
 
 logger = logging.getLogger(__name__)

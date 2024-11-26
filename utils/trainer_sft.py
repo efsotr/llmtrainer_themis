@@ -12,7 +12,7 @@ from .arguments_init import get_training_args, get_data_args
 from .trainer_base import BaseTrainer
 from .utils import logger_ids, to_pt, get_key
 from optimized_module.crossentropy import EffCrossEntropy
-from tokenize import get_prompt_ids, get_token_ids
+from tokenize_ids import get_prompt_ids, get_token_ids
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
