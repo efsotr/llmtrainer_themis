@@ -38,7 +38,6 @@ class Namespace(argparse.Namespace):
     tp_size: int = 1
     prefix_dir: str
     output_filename: str
-    gen_eos_token: str
 
     def init(self):        
         self.avail_test_files = set(file for file in self.test_files.split(',')) \
@@ -54,7 +53,6 @@ if __name__ == '__main__':
     parser.add_argument('--test_dirs', required=True, type=str, help="Testset directory")
     parser.add_argument('--test_files', default=None, type=str, help="Testset filename")
     parser.add_argument('--output_dir', required=True, type=str, help="Output directory")
-    parser.add_argument('--gen_eos_token', required=True, type=str)
     parser.add_argument('--seed', default=0, type=int)
     args = parser.parse_args(namespace=Namespace())
     args.init()
@@ -99,14 +97,14 @@ if __name__ == '__main__':
         test_dataset = safe_load(os.path.join(dirpath, file))
         if args.prefix_dir:
             test_prefix = safe_load(os.path.join(args.prefix_dir, "prefix." + file))
-            test_prefix = [ex[1] for ex in test_prefix]
-        else:
-            test_prefix = [None] * len(test_dataset)
+            assert len(test_dataset) == len(test_prefix)
+            for ex, prefix in zip(test_dataset, test_prefix):
+                ex["prefix"] = prefix
+            
         test_outputs = safe_load(os.path.join(args.output_dir, "completions." + file))
         assert isinstance(test_dataset, list) , "test_dataset must be of type list"
         assert len(test_dataset) > 0, "test_dataset must have a length greater than 0"
         assert len(test_dataset) == len(test_outputs)
-        assert len(test_dataset) == len(test_prefix)
 
         avg_lengths[file] = sum(sum(map(len, outs)) / len(outs) for outs in test_outputs) / len(test_outputs)
         def process(inputs):
@@ -119,7 +117,7 @@ if __name__ == '__main__':
                 prefix = get_token_ids(prefix, tokenizer) if prefix is not None else []
                 responses = []
                 for out in outs:
-                    responses.append(get_token_ids(out.removesuffix(args.gen_eos_token) + eos_token, tokenizer))
+                    responses.append(get_token_ids(out + eos_token, tokenizer))
                 batchs = batch_samples(list(enumerate(responses)), len_fn=lambda x: len(x[1]), batch_max_size=args.batch_tot_tokens - len(prompt) - len(prefix), enable_sort=True)
                 for batch in batchs:
                     idxs, res = list(zip(*batch))
