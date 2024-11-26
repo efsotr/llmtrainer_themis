@@ -98,8 +98,8 @@ if __name__ == '__main__':
         if args.prefix_dir:
             test_prefix = safe_load(os.path.join(args.prefix_dir, "prefix." + file))
             assert len(test_dataset) == len(test_prefix)
-            for ex, prefix in zip(test_dataset, test_prefix):
-                ex["prefix"] = prefix
+        else:
+            test_prefix = ["" for _ in range(len(test_dataset))]
             
         test_outputs = safe_load(os.path.join(args.output_dir, "completions." + file))
         assert isinstance(test_dataset, list) , "test_dataset must be of type list"
@@ -114,7 +114,7 @@ if __name__ == '__main__':
             rets = []
             for i, (ex, prefix, outs) in inputs:
                 prompt = get_prompt_ids(ex, tokenizer, "chat")
-                prefix = get_token_ids(prefix, tokenizer) if prefix is not None else []
+                prefix = get_token_ids(prefix, tokenizer)
                 responses = []
                 for out in outs:
                     responses.append(get_token_ids(out + eos_token, tokenizer))
