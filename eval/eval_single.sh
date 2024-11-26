@@ -51,7 +51,7 @@ if [[ "$only_score" != "true" && "$only_score" != "True" && "$only_score" != "1"
         --test_files "${test_files}" \
         --prompt_type "${prompt_type}" \
         --seed "${seed}" \
-        "${extra_args_gen}" \
+        ${extra_args_gen} \
         >${output_dir}/test_result.log 2>&1 
 fi
 
@@ -61,6 +61,6 @@ if [[ "$only_gen" != "true" && "$only_gen" != "True" && "$only_gen" != "1" ]]; t
         --output_dir ${output_dir} \
         --test_files "${test_files}" \
         --seed "${seed}" \
-        "${extra_args_score}" \
+        ${extra_args_score} \
         >${output_dir}/test_stats.log 2>&1 
 fi
