@@ -7,9 +7,9 @@ OMP_NUM_THREADS=8 accelerate launch --main_process_port "$PORT" --config_file ./
     --gradient_checkpointing ${gradient_checkpointing:-1} \
     --torch_dtype bfloat16 \
     --bf16 \
-    --formated_train_data_cache_path ./cache/${DATA_NAME}.train.json.gz \
-    --formated_dev_data_cache_path ./cache/${DATA_NAME}.dev.json \
-    --ref_cache_path ./cache/${DATA_NAME}.${MODEL_NAME}_logits.pt.gz \
+    --formated_train_data_cache_path ./cache_ids/${DATA_NAME}.train.json.gz \
+    --formated_dev_data_cache_path ./cache_ids/${DATA_NAME}.dev.json \
+    --ref_cache_path ./cache_logits/${DATA_NAME}.${MODEL_NAME}_logits.pt.gz \
     --prompt_type chat \
     --remove_unused_columns 0 \
     --do_train \

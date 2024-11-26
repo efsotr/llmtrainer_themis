@@ -30,9 +30,9 @@ accelerate launch --main_process_port "$PORT" --config_file ./configs/deepspeed_
     --with_efficient_module optimized_module \
     --torch_dtype bfloat16 \
     --bf16 \
-    --formated_train_data_cache_path ./cache/${DATA_NAME}.train.json.gz \
-    --formated_dev_data_cache_path ./cache/${DATA_NAME}.dev.json \
-    --ref_cache_path ./cache/${DATA_NAME}.${MODEL_NAME}_logits.pt.gz \
+    --formated_train_data_cache_path ./cache_ids/${DATA_NAME}.train.json.gz \
+    --formated_dev_data_cache_path ./cache_ids/${DATA_NAME}.dev.json \
+    --ref_cache_path ./cache_logits/${DATA_NAME}.${MODEL_NAME}_logits.pt.gz \
     --prompt_type chat \
     --do_train \
     --do_eval \
@@ -41,6 +41,6 @@ accelerate launch --main_process_port "$PORT" --config_file ./configs/deepspeed_
     --batch_tokens_divider 1 \
     --include_tokens_per_second \
     --output_dir $1 \
-    --max_length 2048 \
+    --max_length 4096 \
     --seed 0 \
     > $1/training.log 2>&1 
