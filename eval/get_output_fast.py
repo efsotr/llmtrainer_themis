@@ -56,7 +56,7 @@ class Namespace(argparse.Namespace):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--model', required=True, type=str, help="Model name or path")
-    parser.add_argument('--batch_size', default=32, type=int)
+    parser.add_argument('--batch_size', default=256, type=int)
     parser.add_argument('--test_dirs', required=True, type=str, help="Testset directory")
     parser.add_argument('--test_files', default=None, type=str, help="Testset filename")
     parser.add_argument('--output_dir', required=True, type=str, help="Output directory")
