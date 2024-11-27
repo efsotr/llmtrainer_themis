@@ -30,8 +30,8 @@ def load_logits(
                     ref_log_probs += list(logits_map[prompt_id])
 
                 inputs["ref_log_probs"] = torch.cat(ref_log_probs)
-                assert len(inputs["ref_log_probs"]) == len(inputs["input_ids"][0])
-
+                assert len(inputs["ref_log_probs"]) == (inputs["labels"] != -100).sum().item()
+                
         if eval_datasets is not None and training_args.training_type == "po":
             for eval_dataset in eval_datasets.values():
                 for ex in eval_dataset:
