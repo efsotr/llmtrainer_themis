@@ -75,7 +75,7 @@ class BaseTrainer(Trainer):
         self.data_collator = _data_collator
         return dataloader
         
-    def training_step(self, model: nn.Module, inputs: Dict[str, Union[Dict[str, int], List[Dict[str, torch.torch.Tensor]]]]) -> torch.Tensor:
+    def training_step(self, model: nn.Module, inputs: Dict[str, Union[Dict[str, int], List[Dict[str, torch.torch.Tensor]]]], num_items_in_batch=None) -> torch.Tensor:
         """
         Perform a training step on a batch of inputs.
 
