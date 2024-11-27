@@ -12,8 +12,8 @@ check_variable() {
     fi
 }
 
-MODEL_DIR={$MODEL_DIR:-"./models/"}
-CHECKPOINT={$CHECKPOINT:-""}
+MODEL_DIR=${MODEL_DIR:-"./models/"}
+CHECKPOINT=${CHECKPOINT:-""}
 
 echo ""
 check_variable "MODEL_DIR"
