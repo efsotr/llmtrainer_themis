@@ -31,11 +31,11 @@ def load_logits(
 
                 inputs["ref_log_probs"] = torch.cat(ref_log_probs)
                 assert len(inputs["ref_log_probs"]) == (inputs["labels"] != -100).sum().item()
-                
+
         if eval_datasets is not None and training_args.training_type == "po":
             for eval_dataset in eval_datasets.values():
                 for ex in eval_dataset:
-                    ref_log_probs = logits_map[ex["prompt"]]
+                    ref_log_probs = logits_map[ex["prompt_id"]]
                     ex["ref_log_probs"] = torch.cat(ref_log_probs)
                     assert len(ref_log_probs[0]) == len(ex["chosen"])
                     assert len(ref_log_probs[1]) == len(ex["rejected"])
