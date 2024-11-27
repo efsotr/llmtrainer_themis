@@ -7,7 +7,7 @@ import importlib
 import transformers
 
 from file_IO import safe_load
-from .utils import (
+from utils import (
     init_args, get_training_args, get_data_args, get_tokenizer,
     preprocess_data, EndEvalCallback, 
     load_model, load_tokenizer, 

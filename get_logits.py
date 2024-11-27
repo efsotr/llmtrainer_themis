@@ -12,7 +12,7 @@ import torch.distributed as dist
 from transformers import set_seed
 from accelerate.utils.other import wait_for_everyone
 
-from .utils import (
+from utils import (
     init_args, get_model_args, get_data_args, get_training_args, 
     preprocess_data, load_model, load_tokenizer, get_tokenizer
 )
