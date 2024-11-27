@@ -104,7 +104,7 @@ def preprocess_data(formated_data):
             
             fw_batchs = collected_fw_batchs
 
-        fw_batchs = [sum(fw_batchs[st: st+training_args.batch_tokens_divider]) 
+        fw_batchs = [sum(fw_batchs[st: st+training_args.batch_tokens_divider], start=[]) 
                     for st in range(0, len(fw_batchs), training_args.batch_tokens_divider)]
         
         group_size //= training_args.batch_tokens_divider
