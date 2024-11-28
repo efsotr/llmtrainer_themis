@@ -121,6 +121,7 @@ class MaxTrainingArguments(TrainingArguments):
     po_gamma: float = field(default=0)
     norm_by_len_plus_one: float = field(default=0.)
     use_sampo: float = field(default=False)
+    enable_norm_win_lose: bool = field(default=False)
 
     ## RM
     rm_beta: float = field(default=1)

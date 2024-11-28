@@ -187,7 +187,25 @@ class Trainer(BaseTrainer):
         outputs = model(**inputs)
 
         loss = torch.tensor(0., device=self.args.device)
-        log_probs = - cast(Tensor, EffCrossEntropy.apply(outputs.logits, labels.unsqueeze(-1))).view(-1).float()
+        log_probs = cast(Tensor, EffCrossEntropy.apply(outputs.logits, labels.unsqueeze(-1)))
+
+        if self.args.enable_norm_win_lose:
+            seqlens = self.get_eff_seqlens(inputs)
+            seq_ids = torch.repeat_interleave(seqlens)
+            def norm_win_lose(grad_input, grad_output):
+                grad_h = grad_input[-2]
+                acc_grad_h = torch.zeros((len(seqlens), grad_h.size(1)), dtype=grad_h.dtype, device=grad_h.device)
+                acc_grad_h.scatter_add_(0, seq_ids[:, None], grad_h)
+                acc_grad_norm = acc_grad_h.norm(2, dim=-1)
+                min_norm = torch.minimum(acc_grad_norm[::2], acc_grad_norm[1::2])
+                norm_mul = torch.repeat_interleave(min_norm, 2) / acc_grad_norm
+                norm_mul = torch.gather(norm_mul, 0, seq_ids)
+                
+                grad_h.mul_(norm_mul[:, None])
+                
+            log_probs.grad_fn.next_functions[0][0].register_hook(norm_win_lose)
+        
+        log_probs = - log_probs.view(-1).float()
 
         seqends = self.get_seqends(inputs)
         _seq_log_probs = F.pad(log_probs.detach().cumsum(0, dtype=torch.float)[seqends], (1, 0), value=0)
