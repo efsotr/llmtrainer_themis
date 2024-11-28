@@ -198,7 +198,7 @@ class Trainer(BaseTrainer):
                 acc_grad_h.scatter_add_(0, seq_ids[:, None], grad_h)
                 acc_grad_norm = acc_grad_h.norm(2, dim=-1)
                 min_norm = torch.minimum(acc_grad_norm[::2], acc_grad_norm[1::2])
-                norm_mul = torch.repeat_interleave(min_norm, 2) / acc_grad_norm
+                norm_mul = torch.repeat_interleave(min_norm, 2) / (acc_grad_norm + 1e-8)
                 norm_mul = torch.gather(norm_mul, 0, seq_ids)
                 
                 grad_h.mul_(norm_mul[:, None])
