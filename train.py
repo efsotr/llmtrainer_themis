@@ -82,6 +82,8 @@ def main():
                     for key in data.keys():
                         dev_formated_data[f"{key}_dev{cnt}"] = data[key]
                     cnt += 1
+        else:
+            dev_formated_data = None
 
         return preprocess_data((train_formated_data, dev_formated_data))
     
