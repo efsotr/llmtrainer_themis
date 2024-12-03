@@ -3,7 +3,7 @@ output_dir=""
 checkpoints=""
 test_dirs="./test_data"
 test_files=""
-prompt_type="chat"
+prompt_type="completion"
 seed="0"
 only_score=0
 
