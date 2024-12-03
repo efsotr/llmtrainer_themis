@@ -1,8 +1,51 @@
 from typing import Dict
 from transformers import LlamaTokenizer, LlamaTokenizerFast
 
+PROMPT_W_ADD = "###Instruction###\n\
+Please act as an impartial and helpful evaluator for natural language generation (NLG), and the audience is an expert in the field.\n\
+Your task is to evaluate the quality of {task} strictly based on the given evaluation criterion.\n\
+Begin the evaluation by providing your analysis concisely and accurately, and then on the next line, start with \"Rating:\" followed by your rating on a Likert scale from 1 to 5 (higher means better).\n\
+You MUST keep to the strict boundaries of the evaluation criterion and focus solely on the issues and errors involved; otherwise, you will be penalized.\n\
+Make sure you read and understand these instructions, as well as the following evaluation criterion and example content, carefully.\n\
+\n\
+###Evaluation Criterion###\n\
+{aspect_des}\n\
+\n\
+###Example###\n\
+{source_des}:\n\
+{source}\n\
+\n\
+{addition_des}:\n\
+{addition}\n\
+\n\
+{target_des}:\n\
+{target}\n\
+\n\
+###Your Evaluation###\n"
+
+PROMPT_WO_ADD = "###Instruction###\n\
+Please act as an impartial and helpful evaluator for natural language generation (NLG), and the audience is an expert in the field.\n\
+Your task is to evaluate the quality of {task} strictly based on the given evaluation criterion.\n\
+Begin the evaluation by providing your analysis concisely and accurately, and then on the next line, start with \"Rating:\" followed by your rating on a Likert scale from 1 to 5 (higher means better).\n\
+You MUST keep to the strict boundaries of the evaluation criterion and focus solely on the issues and errors involved; otherwise, you will be penalized.\n\
+Make sure you read and understand these instructions, as well as the following evaluation criterion and example content, carefully.\n\
+\n\
+###Evaluation Criterion###\n\
+{aspect_des}\n\
+\n\
+###Example###\n\
+{source_des}:\n\
+{source}\n\
+\n\
+{target_des}:\n\
+{target}\n\
+\n\
+###Your Evaluation###\n"
+
+def get_prompt(ex):
+    return PROMPT_WO_ADD if ex.get("addition", None) is None else PROMPT_W_ADD
+
 SYSTEM_PROMPT = "You are a helpful, respectful and honest assistant."
-PROMPT = """{prompt}\n\n"""
 
 def get_token_ids(text: str, tokenizer):
     if isinstance(tokenizer, (LlamaTokenizer, LlamaTokenizerFast)):
@@ -19,12 +62,11 @@ def get_prompt_ids(
     system_prompt : str = None
 ):
     # one turn conversation
-    response_prefix = ex.get("prefix", "")
     if system_prompt is None:
         system_prompt = ex.get("system_prompt", None)
 
     if prompt_type == "completion":
-        prompt = PROMPT.format_map({**ex, "system_prompt": system_prompt}) + response_prefix
+        prompt = get_prompt(ex).format_map({**ex, "system_prompt": system_prompt})
         if not tokenize:
             return prompt
         return tokenizer.encode(prompt)
@@ -33,12 +75,11 @@ def get_prompt_ids(
         conversation = []
         if system_prompt is not None:
             conversation.append({"role": "system", "content": system_prompt.strip()})
-        conversation.append({"role": "user", "content": ex["prompt"].strip()})
+        conversation.append({"role": "user", "content": get_prompt(ex).format_map(**ex)})
         prompt = tokenizer.apply_chat_template(conversation, 
                                                tokenize=tokenize, 
                                                add_generation_prompt=True)
-        prefix = get_token_ids(response_prefix, tokenizer)
-        return prompt + prefix
+        return prompt
     
     raise NotImplementedError
 

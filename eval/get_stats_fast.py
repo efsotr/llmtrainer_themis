@@ -1,20 +1,17 @@
 import os
+import re
 import sys
-import copy
-import torch
 import logging
 import argparse
-from itertools import chain
+from collections import Counter
 from typing import cast, List, Tuple
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
 training_dir = os.path.abspath(os.path.join(current_dir, '..'))
 sys.path.append(training_dir)
 
-from tools import batch_samples
 from file_IO import safe_load, safe_save
-from tokenize_ids import get_prompt_ids, get_token_ids, get_eos
-from multi_process_ray import multi_process, multi_process_decorator
+from stats import Correlation
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -27,16 +24,11 @@ logging.basicConfig(
 class AllIn:
     def __contains__(self, x):
         return True
-
+    
 class Namespace(argparse.Namespace):
-    model: str
     output_dir: str
     test_dirs: List[str]
     test_files: str
-    batch_tot_tokens: int
-    seed: int
-    tp_size: int = 1
-    prefix_dir: str
     output_filename: str
 
     def init(self):        
@@ -47,14 +39,10 @@ class Namespace(argparse.Namespace):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--model', default="./models/ArmoRM-Llama3-8B-v0.1", type=str)
-    parser.add_argument('--prefix_dir', default=None, type=str)
-    parser.add_argument('--batch_tot_tokens', default=128 * 1024, type=int)
     parser.add_argument('--test_dirs', required=True, type=str, help="Testset directory")
     parser.add_argument('--test_files', default=None, type=str, help="Testset filename")
     parser.add_argument('--output_dir', required=True, type=str, help="Output directory")
     parser.add_argument('--output_filename', default="stats.overall.json", type=str, help="Output filename")
-    parser.add_argument('--seed', default=0, type=int)
     args = parser.parse_args(namespace=Namespace())
     args.init()
     
@@ -72,123 +60,78 @@ if __name__ == '__main__':
 
     os.makedirs(args.output_dir, exist_ok=True)
 
+    rating_pattern = re.compile(r"Rating:\s*([1-5])")
+    INVALID_RATING = 0
+    def parse_rating(response):
+        last_line = response.split("\n")[-1]
+        match = rating_pattern.search(last_line)
+        return int(match.group(1)) if match else INVALID_RATING
+    
+    def get_score(ex):
+        score = ex["score"]
+        if isinstance(score, (list, tuple)):
+            return score[0]
+        return score
+    
     all_test_prompts = []
     all_scores = {}
-    avg_lengths = {}
 
-    def get_attr_batch(prompt, prefix, res):
-        inputs_ids = prompt + prefix
-        position_ids = list(range(len(inputs_ids)))
-        score_mask = [0] * len(inputs_ids)
-        gate_pos = len(prompt) - 5
-        start_q = [0] * len(inputs_ids)
-        end_k = [len(res)] * len(inputs_ids)
-        pos = len(inputs_ids)
-        for i, r in enumerate(res, 1):
-            inputs_ids += r
-            position_ids += list(range(pos, pos + len(r)))
-            score_mask += [0] * (len(r) - 1) + [1]
-            start_q += [i] * len(r)
-            end_k += [i] * len(r)
-        gate_mask = [0] * len(inputs_ids)
-        gate_mask[gate_pos] = 1
-        return inputs_ids, position_ids, score_mask, gate_mask, start_q, end_k
-
+    overall_stats = {}
     for dirpath, file in test_files:
         test_dataset = safe_load(os.path.join(dirpath, file))
-        if args.prefix_dir:
-            test_prefix = safe_load(os.path.join(args.prefix_dir, "prefix." + file))
-            assert len(test_dataset) == len(test_prefix)
-        else:
-            test_prefix = ["" for _ in range(len(test_dataset))]
-            
         test_outputs = safe_load(os.path.join(args.output_dir, "completions." + file))
         assert isinstance(test_dataset, list) , "test_dataset must be of type list"
         assert len(test_dataset) > 0, "test_dataset must have a length greater than 0"
         assert len(test_dataset) == len(test_outputs)
 
-        avg_lengths[file] = sum(sum(map(len, outs)) / len(outs) + len(prefix) for outs, prefix in zip(test_outputs, test_prefix)) / len(test_outputs)
-        def process(inputs):
-            from transformers import AutoTokenizer
-            tokenizer = AutoTokenizer.from_pretrained(args.model)
-            _, eos_token = get_eos(tokenizer, "chat")
-            rets = []
-            for i, (ex, prefix, outs) in inputs:
-                prompt = get_prompt_ids(ex, tokenizer, "chat")
-                prefix = get_token_ids(prefix, tokenizer)
-                responses = []
-                for out in outs:
-                    responses.append(get_token_ids(out + eos_token, tokenizer))
-                batchs = batch_samples(list(enumerate(responses)), len_fn=lambda x: len(x[1]), batch_max_size=args.batch_tot_tokens - len(prompt) - len(prefix), enable_sort=True)
-                for batch in batchs:
-                    idxs, res = list(zip(*batch))
-                    rets.append(get_attr_batch(prompt, prefix, res) + (list(zip([file] * len(idxs), [i] * len(idxs), idxs)), ))
-            return rets
+        ratings = [parse_rating(outs[0]) for outs in test_outputs]
+        rating_distribution = Counter(ratings)
+        rating_distribution = dict(sorted(rating_distribution.most_common()))
+        correlation = {}
 
-        all_test_prompts.extend(multi_process(enumerate(zip(test_dataset, test_prefix, test_outputs)), process, num_workers=32, num_cpus=1))
-        all_scores[file] = [[None] * len(outs) for outs in test_outputs]
+        if test_dataset[0].get("sys_id", None) is None:
+            num_sys = 1
+            exs = [
+                (get_score(ex), r, None, None)
+                for ex, r in zip(test_dataset, ratings)
+            ]
+        else:
+            num_sys = len(set(ex["sys_id"] for ex in test_dataset))
+            exs = [
+                (get_score(ex), r, ex['sys_id'], ex['seg_id'])
+                for ex, r in zip(test_dataset, ratings)
+            ]
+            exs.sort(key=lambda x: (x[2], x[3]))
+        golds = [ex[0] for ex in exs]
+        preds = [ex[1] for ex in exs]
+        corr = Correlation(num_sys, golds, preds)
+
+        if num_sys > 1:
+            for metric in ["Pearson", "Spearman", "Kendall"]:
+                correlation[metric] = getattr(corr, metric)("item")[0]
+        else:
+            for metric in ["Pearson", "Spearman", "Kendall"]:
+                correlation[metric] = getattr(corr, metric)()[0]
+
+        overall_stats[file] = {
+            "correlation": correlation,
+            "rating_distribution": rating_distribution,
+            "dataset_size": len(test_dataset)
+        }
+
+    avgs = ["SummEval", "Topical-Chat", "WMT23"]
+    for avg in avgs:
+        s = {"Pearson": 0, "Spearman": 0, "Kendall": 0}
+        n = {"Pearson": 0, "Spearman": 0, "Kendall": 0}
+        for k in overall_stats.keys():
+            if k.startswith(avg) and k.endswith(".json"):
+                for metric in ["Pearson", "Spearman", "Kendall"]:
+                    s[metric] += overall_stats[k]["correleation"][metric]
+                    n[metric] += 1
+
+        if n["Pearson"] > 0:
+            for metric in ["Pearson", "Spearman", "Kendall"]:
+                s[metric] /= n[metric]
+            overall_stats[avg] = s
         
-    batchs = batch_samples(all_test_prompts, len_fn=lambda x: len(x[0]), batch_max_size=args.batch_tot_tokens, enable_sort=True)
-    def get_batch(batch):
-        batch = list(zip(*batch))
-        batch[-1] = list(chain(*batch[-1]))
-        return batch
-
-    batchs = [get_batch(batch) for batch in batchs]
-
-    num_workers = torch.cuda.device_count() // args.tp_size
-    logger.info(f"num_workers: {num_workers}")
-    
-    @multi_process_decorator(multi_process, num_workers=num_workers, num_gpus=args.tp_size, num_cpus=1)
-    def process(inputs):
-        if inputs == []:
-            return []
-        import torch
-        from transformers import AutoConfig
-        from optimized_module.modeling_armo import LlamaForRewardModelWithGating, do_batch
-        config = AutoConfig.from_pretrained(args.model)
-        config.use_cache = False
-        config.use_tree_attn = True
-        model = LlamaForRewardModelWithGating.from_pretrained(args.model,
-                                                              config=config,
-                                                              device_map="cuda",
-                                                              trust_remote_code=True,
-                                                              torch_dtype=torch.bfloat16,
-                                                              )
-        model.eval()
-
-        from tqdm import tqdm
-        with torch.no_grad():
-            outs = []
-            for batch in tqdm(inputs):
-                input_ids, position_ids, score_mask, gate_mask, start_q, end_k, pos = batch
-                input_batch = do_batch(input_ids, position_ids, score_mask, gate_mask, start_q, end_k)
-                batch_score = model(**input_batch).score
-
-                assert len(batch_score) == len(pos)
-                outs.extend(zip(batch_score.tolist(), pos))
-            
-        return outs
-    
-    outs = process(batchs)
-
-    for ex in outs:
-        score, (file, i, j) = ex
-        all_scores[file][i][j] = score
-
-    for file in all_scores:
-        safe_save(all_scores[file], os.path.join(args.output_dir, "stats." + file))
-
-    def mean(x):
-        return sum(x) / len(x)
-
-    avg_mean_scores = {}
-    avg_max_scores = {}
-    for file in all_scores:
-        avg_mean_scores[file] = mean([mean(scores) for scores in all_scores[file]])
-        avg_max_scores[file] = mean([max(scores) for scores in all_scores[file]])
-
-    safe_save({"avg_mean_scores": avg_mean_scores, 
-               "avg_max_scores": avg_max_scores, 
-               "avg_lengths(chars)": avg_lengths}, 
-              os.path.join(args.output_dir, args.output_filename))
+    safe_save(overall_stats, os.path.join(args.output_dir, args.output_filename))

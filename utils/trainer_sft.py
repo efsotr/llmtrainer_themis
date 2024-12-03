@@ -19,14 +19,12 @@ logger.setLevel(logging.INFO)
 
 def tokenize_data(data, worker_id, args):
     tokenized_data = []
+    response_format = "{Reason}\nRating: {Rating}"
     for ex in tqdm(data, disable=worker_id != args.num_workers - 1):
         prompt_ids = get_prompt_ids(ex, args.tokenizer, args.prompt_type, True, args.system_prompt)
-        response_ids = get_token_ids(ex["response"] + args.tokenizer.eos_token, args.tokenizer)
-        tokenized_data.append({
-                                "prompt_id": ex["prompt_id"],
-                                "prompt": prompt_ids, 
-                                "response": response_ids
-                                })
+        for ex_res in ex["response"]:
+            response_ids = get_token_ids(response_format.format(Reason=ex_res["Reason"].strip(), Rating=ex_res["Rating"]) + args.tokenizer.eos_token, args.tokenizer)
+            tokenized_data.append({"prompt": prompt_ids, "response": response_ids})
     return tokenized_data
 
 def get_inputs(examples, name, split):
