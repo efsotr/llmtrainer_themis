@@ -116,7 +116,9 @@ if __name__ == '__main__':
                                  swap_space=8, 
                                  seed=args.seed, 
                                  enable_prefix_caching=True, 
-                                 tensor_parallel_size=args.tp_size)
+                                 tensor_parallel_size=args.tp_size,
+                                 max_loras=1,
+                                 max_lora_rank=32)
         model = LLM(**engine_args.__dict__)
         eval_params_map = json.load(open(args.sampling_params))
         sampling_params_map = {n: SamplingParams(stop_token_ids=[eos_token_id], **p) 
