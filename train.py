@@ -13,6 +13,8 @@ from utils import (
     load_model, load_tokenizer, 
     load_logits
 )
+import lora_moe
+
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)

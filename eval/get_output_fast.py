@@ -32,6 +32,7 @@ class AllIn:
 
 class Namespace(argparse.Namespace):
     model: str
+    peft_model: str
     output_dir: str
     test_dirs: List[str]
     prefix_dir: str
@@ -56,6 +57,7 @@ class Namespace(argparse.Namespace):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--model', required=True, type=str, help="Model name or path")
+    parser.add_argument('--peft_model', default=None, type=str)
     parser.add_argument('--batch_size', default=256, type=int)
     parser.add_argument('--test_dirs', required=True, type=str, help="Testset directory")
     parser.add_argument('--test_files', default=None, type=str, help="Testset filename")
@@ -112,6 +114,7 @@ if __name__ == '__main__':
     def process(inputs_queue, worker_id):
         from transformers import AutoTokenizer
         from vllm import LLM, EngineArgs, SamplingParams, TokensPrompt
+        from vllm.lora.request import LoRARequest
         tokenizer = AutoTokenizer.from_pretrained(args.model)
 
         eos_token_id, eos_token = get_eos(tokenizer, args.prompt_type)
@@ -121,11 +124,13 @@ if __name__ == '__main__':
                                  swap_space=8, 
                                  seed=args.seed, 
                                  enable_prefix_caching=True, 
-                                 tensor_parallel_size=args.tp_size)
+                                 tensor_parallel_size=args.tp_size,
+                                 enable_lora=args.peft_model is not None)
         model = LLM(**engine_args.__dict__)
         eval_params_map = json.load(open(args.sampling_params))
-        sampling_params_map = {n: SamplingParams(stop_token_ids=[eos_token_id], **p) 
-                               for n, p in eval_params_map.items()}
+        sampling_params_map = SamplingParams(stop_token_ids=[eos_token_id], **eval_params_map)  # {n: SamplingParams(stop_token_ids=[eos_token_id], **p) 
+                               # for n, p in eval_params_map.items()}
+        lora_req = LoRARequest(lora_name="default", lora_int_id=1, lora_path=args.peft_model) if args.peft_model is not None else None
         
         cache_file = cache.open(worker_id)
         no_input = False
@@ -139,7 +144,7 @@ if __name__ == '__main__':
                 else:
                     outs.append([None, *item[1:]])
                     input_ids = get_prompt_ids(item[0], tokenizer, args.prompt_type)
-                    model.llm_engine.add_request(str(len(outs) - 1), TokensPrompt(prompt_token_ids=input_ids), sampling_params_map[file])
+                    model.llm_engine.add_request(str(len(outs) - 1), TokensPrompt(prompt_token_ids=input_ids), sampling_params_map, lora_request=lora_req)
             
             if model.llm_engine.has_unfinished_requests():
                 step_outputs = model.llm_engine.step()

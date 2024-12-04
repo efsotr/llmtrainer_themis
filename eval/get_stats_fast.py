@@ -126,7 +126,7 @@ if __name__ == '__main__':
         for k in overall_stats.keys():
             if k.startswith(avg) and k.endswith(".json"):
                 for metric in ["Pearson", "Spearman", "Kendall"]:
-                    s[metric] += overall_stats[k]["correleation"][metric]
+                    s[metric] += overall_stats[k]["correlation"][metric]
                     n[metric] += 1
 
         if n["Pearson"] > 0:

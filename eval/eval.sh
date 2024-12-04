@@ -1,7 +1,7 @@
 set -e
 output_dir=""
 checkpoints=""
-test_dirs="./test_data"
+test_dirs="./test_data/SummEval,./test_data/Topical-Chat,./test_data/SFRES_SFHOT"
 test_files=""
 prompt_type="completion"
 seed="0"
@@ -57,6 +57,5 @@ for checkpoint in ${checkpoints[@]}; do
         --test_dir  "${test_dirs}" \
         --output_dir ${output_dir}/test_result-${checkpoint} \
         --test_files "${test_files}" \
-        --seed "${seed}" \
         >${output_dir}/test_stats-${checkpoint}.log 2>&1 
 done

@@ -60,7 +60,6 @@ if [[ "$only_gen" != "true" && "$only_gen" != "True" && "$only_gen" != "1" ]]; t
         --test_dir  "${test_dirs}" \
         --output_dir ${output_dir} \
         --test_files "${test_files}" \
-        --seed "${seed}" \
         ${extra_args_score} \
         >${output_dir}/test_stats.log 2>&1 
 fi
