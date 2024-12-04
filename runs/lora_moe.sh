@@ -1,4 +1,4 @@
-LORA_CONFIG='{"peft_type": "LORA_MOE", "r": 16, "num_gates": 8, "use_dora": false, "lora_alpha": 32, "target_modules": ["q_proj", "v_proj", "down_proj"], "lora_dropout": 0.05}'
+LORA_CONFIG='{"peft_type": "LORA_MOE", "r": 16, "num_gates": 8, "use_dora": false, "lora_alpha": 32, "target_modules": ["q_proj", "v_proj", "down_proj"], "lora_dropout": 0}'
 
 mkdir -p $1
 

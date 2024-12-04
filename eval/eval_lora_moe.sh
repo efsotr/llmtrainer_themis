@@ -46,7 +46,7 @@ for checkpoint in ${checkpoints[@]}; do
     fi
     
     if [[ "$only_score" != "true" && "$only_score" != "True" && "$only_score" != "1" ]]; then
-        python convert_to_lora_combination.py
+        python convert_to_lora_combination.py $ck_dir
         python ./eval/get_output_fast_lora_moe.py \
             --model "${base_model}" \
             ${peft_model} \

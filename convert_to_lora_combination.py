@@ -7,7 +7,7 @@ from safetensors.torch import load_file, save_file
 dir = sys.argv[1]
 output_dir = dir
 peft_config = json.load(open(os.path.join(dir, "adapter_config.json")))
-peft_params = load_file(dir + "adapter_model.safetensors")
+peft_params = load_file(os.path.join(dir, "adapter_model.safetensors"))
 peft_config.pop("num_gates")
 peft_config["lora_alpha"] *= 2
 peft_config["r"] *= 2
