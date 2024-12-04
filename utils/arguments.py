@@ -41,6 +41,9 @@ class ModelArguments:
         default='{"peft_type": "LORA", "r": 16, "lora_alpha": 32, "target_modules": ["down_proj"], "lora_dropout": 0.05}',
         metadata={"help": "The config for PEFT (e.g. Lora)."}
     )
+    use_lora_moe: bool = field(
+        default=False
+    )
     peft_model_id: str = field(
         default=None,
         metadata={"help": "The peft model checkpoint for peft weights initialization."}
@@ -55,6 +58,8 @@ class ModelArguments:
         if self.tokenizer_id is None:
             self.tokenizer_id = self.model_id
         self.torch_dtype = getattr(torch, self.torch_dtype)
+        if self.use_lora_moe:
+            assert self.use_peft
 
 @dataclass
 class DataTrainingArguments:
