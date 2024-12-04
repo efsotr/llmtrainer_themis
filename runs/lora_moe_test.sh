@@ -16,7 +16,7 @@ OMP_NUM_THREADS=8 accelerate launch --main_process_port "$PORT" --config_file ./
     --prompt_type completion \
     --remove_unused_columns 0 \
     --do_train \
-    --check_stage no_ck \
+    --check_stage ck_run \
     --training_type sft \
     --optim adamw_torch \
     --learning_rate $LR \
@@ -41,5 +41,5 @@ OMP_NUM_THREADS=8 accelerate launch --main_process_port "$PORT" --config_file ./
     --max_length 4096 \
     --seed 0 \
     --run_name $(basename $1) \
-    --report_to wandb \
+    --report_to none \
     > $1/training.log 2>&1 

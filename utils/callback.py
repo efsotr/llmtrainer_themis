@@ -23,7 +23,8 @@ class EndEvalCallback(TrainerCallback):
         if args.check_stage == "ck_run":
             if state.global_step >= 3:
                 control.should_training_stop = True
-                control.should_save = False
+                if args.save_strategy != IntervalStrategy.NO:
+                    control.should_save = True
                 if args.eval_strategy != IntervalStrategy.NO:
                     control.should_evaluate = True
 
