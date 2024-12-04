@@ -120,7 +120,7 @@ def load_model():
             else:
                 raise NotImplementedError(model_args.peft_config)
             model_args.peft_config.update({"task_type": "CAUSAL_LM"})
-            peft_config = PeftConfig.from_peft_type(**peft_config)
+            peft_config = PeftConfig.from_peft_type(**model_args.peft_config)
             model = PeftModelForCausalLM(model, peft_config)
             model.peft_config['default'].peft_type = "LORA" # No implementation provided for save_pretrained, reverting to LORA
 
