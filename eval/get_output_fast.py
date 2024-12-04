@@ -41,6 +41,8 @@ class Namespace(argparse.Namespace):
     seed: int
     cache_dir: str
     stop: str = None
+    max_loras: int = 1
+    max_lora_rank: int = 16
 
     ## vllm config
     sampling_params: str
@@ -66,6 +68,8 @@ if __name__ == '__main__':
     parser.add_argument('--tp_size', '-tp', default=1, type=int)
     parser.add_argument('--prompt_type', required=True, type=str, choices=["chat", "completion"])
     parser.add_argument('--seed', default=0, type=int)
+    parser.add_argument('--max_loras', default=1, type=int)
+    parser.add_argument('--max_lora_rank', default=16, type=int)
     parser.add_argument('--cache_dir', default=None, type=str)
     parser.add_argument('--prefix_dir', default=None, type=str)
     args = parser.parse_args(namespace=Namespace())
@@ -125,7 +129,9 @@ if __name__ == '__main__':
                                  seed=args.seed, 
                                  enable_prefix_caching=True, 
                                  tensor_parallel_size=args.tp_size,
-                                 enable_lora=args.peft_model is not None)
+                                 enable_lora=args.peft_model is not None,
+                                 max_loras=args.max_loras,
+                                 max_lora_rank=args.max_lora_rank)
         model = LLM(**engine_args.__dict__)
         eval_params_map = json.load(open(args.sampling_params))
         sampling_params_map = SamplingParams(stop_token_ids=[eos_token_id], **eval_params_map)  # {n: SamplingParams(stop_token_ids=[eos_token_id], **p) 
