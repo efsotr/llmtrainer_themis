@@ -1,0 +1,110 @@
+{
+  "Controllable Generation": {
+    "Attribute Relevance": "t1a1",
+    "Coherence": "t1a2",
+    "Consistency": "t1a1",
+    "Fluency": "t1a2"
+  },
+  "Data to Text": {
+    "Correctness": "t3a1",
+    "Data Coverage": "t3a1",
+    "Fluency": "t3a2",
+    "Grammaticality": "t3a2",
+    "Informativeness": "t3a1",
+    "Naturalness": "t3a2",
+    "Overall Quality": "t3a4",
+    "Phrasing": "t3a3",
+    "Relevance": "t3a1",
+    "Semantic Adequacy": "t3a1",
+    "Text Structure": "t3a2"
+  },
+  "Dialogue Response Generation": {
+    "Appropriateness": "t4a4",
+    "Coherence": "t4a1",
+    "Consistency": "t4a1",
+    "Content Richness": "t4a3",
+    "Context Maintenance": "t4a1",
+    "Correctness": "t4a1",
+    "Engagingness": "t4a3",
+    "Fluency": "t4a2",
+    "Grammatical Correctness": "t4a2",
+    "Interestingness": "t4a3",
+    "Knowledge Use": "t4a1",
+    "Naturalness": "t4a2",
+    "Overall Quality": "t4a4",
+    "Relevance": "t4a1",
+    "Semantical Appropriateness": "t4a1",
+    "Specificity": "t4a3",
+    "Understandability": "t4a2"
+  },
+  "Grammatical Error Correction": {
+    "Fluency": "t3a2",
+    "Grammaticality": "t3a2",
+    "Meaning Preservation": "t3a1",
+    "Over-correction": "t3a1",
+    "Overall Quality": "t3a4",
+    "Semantics": "t3a1"
+  },
+  "Machine Translation": {
+    "Accuracy": "t3a1",
+    "Fluency": "t3a2",
+    "Locale Convention": "t3a2",
+    "Overall Quality": "t3a4",
+    "Style": "t3a1",
+    "Terminology": "t3a2"
+  },
+  "Paraphrase Generation": {
+    "Fluency": "t3a2",
+    "Overall Quality": "t3a4",
+    "Semantic Similarity": "t3a1"
+  },
+  "Story Generation": {
+    "Character Development": "t1a2",
+    "Clarity": "t1a2",
+    "Coherence": "t1a2",
+    "Cohesiveness": "t1a2",
+    "Complexity": "t1a3",
+    "Empathy": "t1a3",
+    "Engagement": "t1a3",
+    "Fluency": "t1a2",
+    "Grammaticality": "t1a2",
+    "Interestingness": "t1a3",
+    "Length": "t1a1",
+    "Likability": "t1a3",
+    "Logicality": "t1a2",
+    "Relatedness": "t1a1",
+    "Relevance": "t1a1",
+    "Surprise": "t1a3"
+  },
+  "Summarization": {
+    "Accuracy": "t2a1",
+    "Aspect Relevance": "t2a1",
+    "Coherence": "t2a2",
+    "Consistency": "t2a1",
+    "Coverage": "t2a1",
+    "Factuality": "t2a1",
+    "Fluency": "t2a2",
+    "Informativeness": "t2a1",
+    "Overall Quality": "t2a4",
+    "Readability": "t2a2",
+    "Relevance": "t2a1",
+    "Self-coherence": "t2a2",
+    "Sentiment Consistency": "t2a1"
+  },
+  "Controllable Summarization": {
+    "Factual Consistency": "t2a1",
+    "Irrelevant Information": "t2a1",
+    "Missing Information": "t2a1",
+    "Overall Quality": "t2a4"
+  },
+  "Text Simplification": {
+    "Adequacy": "t2a1",
+    "Fluency": "t2a2",
+    "Grammaticality": "t2a2",
+    "Meaning Preservation": "t2a1",
+    "Overall Quality": "t2a4",
+    "Semantics": "t2a1",
+    "Simplicity": "t2a1",
+    "Structural Simplicity": "t2a1"
+  }
+}

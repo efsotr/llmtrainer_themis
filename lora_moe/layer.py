@@ -607,8 +607,8 @@ class Linear(nn.Module, LoraMoeLayer):
                     x = dropout(x)
                     result = result + self.lora_magnitude_vector[active_adapter](
                         x,
-                        lora_A=lora_A,
-                        lora_B=lora_B,
+                        lora_A=lora_As[0],
+                        lora_B=lora_Bs[0],
                         scaling=scaling,
                         base_layer=self.get_base_layer(),
                     )

@@ -56,9 +56,11 @@ from .layer import Conv2d, LoraMoeLayer, dispatch_default
 from peft.tuners.lora.tp_layer import dispatch_megatron
 
 
-def _adapter_names_pre_forward_hook(target, args, kwargs, adapter_names):
+def _adapter_names_pre_forward_hook(target, args, kwargs, adapter_names, gates_idx, gate_idx_dim):
     # pre-forward hook to inject the adapter_names argument when using mixed adapter batches inference
     kwargs["adapter_names"] = adapter_names
+    kwargs["gates_idx"] = gates_idx
+    kwargs["gate_idx_dim"] = gate_idx_dim
     return args, kwargs
 
 
@@ -430,17 +432,17 @@ class LoraMoeModel(BaseTuner):
         adapter_names = kwargs.pop("adapter_names", None)
         gates_idx = kwargs["gates_idx"]
         gate_idx_dim = kwargs.get("gate_idx_dim", 1)
-        if adapter_names is None:
-            # nothing to do
-            yield
-            return
+        # if adapter_names is None:
+        #     # nothing to do
+        #     yield
+        #     return
 
-        if self.training:
-            raise ValueError("Cannot pass `adapter_names` when the model is in training mode.")
+        # if self.training:
+        #     raise ValueError("Cannot pass `adapter_names` when the model is in training mode.")
 
         hook_handles = []
         for module in self.modules():
-            if isinstance(module, LoraMoeConfig) or isinstance(module, ModulesToSaveWrapper):
+            if isinstance(module, LoraMoeLayer) or isinstance(module, ModulesToSaveWrapper):
                 pre_forward = partial(_adapter_names_pre_forward_hook, adapter_names=adapter_names, gates_idx=gates_idx, gate_idx_dim=gate_idx_dim)
                 handle = module.register_forward_pre_hook(pre_forward, with_kwargs=True)
                 hook_handles.append(handle)

@@ -50,3 +50,6 @@ def logger_ids(name, ids):
 
 def get_key(inputs: List[Dict[str, Any]], key: str):
     return [ex[key] for ex in inputs]
+
+def has_key(inputs: List[Dict[str, Any]], key: str):
+    return key in inputs[0]

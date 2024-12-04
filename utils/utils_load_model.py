@@ -13,7 +13,7 @@ from transformers import (
     LlamaTokenizer, 
     PretrainedConfig
 )
-from peft import LoraConfig, PeftModelForCausalLM
+from peft import PeftConfig, PeftModelForCausalLM
 
 from . import get_data_args, get_model_args, get_training_args
 from .arguments_init import set_tokenizer
@@ -109,8 +109,9 @@ def load_model():
     model.cuda()
     if model_args.use_peft:
         if model_args.peft_model_id:
+            assert model_args.use_lora_moe is False
             model = PeftModelForCausalLM.from_pretrained(model, model_args.peft_model_id, is_trainable=True)
-            peft_config = cast(LoraConfig, model.peft_config)
+            peft_config = cast(PeftConfig, model.peft_config)
         else:
             if model_args.peft_config.strip()[0] == '{':
                 model_args.peft_config = json.loads(model_args.peft_config)
@@ -119,7 +120,7 @@ def load_model():
             else:
                 raise NotImplementedError(model_args.peft_config)
             model_args.peft_config.update({"task_type": "CAUSAL_LM"})
-            peft_config = LoraConfig(**model_args.peft_config)
+            peft_config = PeftConfig(**model_args.peft_config)
             model = PeftModelForCausalLM(model, peft_config)
 
         if training_args.gradient_checkpointing:
