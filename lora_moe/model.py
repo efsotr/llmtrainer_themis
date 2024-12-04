@@ -322,12 +322,12 @@ class LoraMoeModel(BaseTuner):
 
         # avoid eager bnb import
         if is_bnb_available():
-            from .bnb import dispatch_bnb_8bit
+            from peft.tuners.lora.bnb import dispatch_bnb_8bit
 
             dispatchers.append(dispatch_bnb_8bit)
 
         if is_bnb_4bit_available():
-            from .bnb import dispatch_bnb_4bit
+            from peft.tuners.lora.bnb import dispatch_bnb_4bit
 
             dispatchers.append(dispatch_bnb_4bit)
 

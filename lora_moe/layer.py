@@ -581,6 +581,8 @@ class Linear(nn.Module, LoraMoeLayer):
         elif self.merged:
             result = self.base_layer(x, *args, **kwargs)
         else:
+            gates_idx = kwargs.pop("gates_idx")
+            gate_idx_dim = kwargs.pop("gate_idx_dim", 1)
             result = self.base_layer(x, *args, **kwargs)
             torch_result_dtype = result.dtype
             for active_adapter in self.active_adapters:
@@ -595,13 +597,13 @@ class Linear(nn.Module, LoraMoeLayer):
                 assert not self.use_dora[active_adapter]
                 if not self.use_dora[active_adapter]:
                     x = dropout(x)
-                    gates_idx = kwargs["gates_idx"]
-                    gate_idx_dim = kwargs.get("gate_idx_dim", 1)
                     assert len(gates_idx) == len(lora_As)
-                    for i in range(gates_idx):
+                    for i in range(len(gates_idx)):
                         x_sub = EffIndexSelectFn(x, dim=gate_idx_dim, index=gates_idx[i])
                         lora_delta = lora_Bs[i](lora_As[i](x_sub)) * scaling
-                        result = torch.scatter_add(result, dim=gate_idx_dim, src=lora_delta)
+                        expand_index = gates_idx[i].reshape((1,) * gate_idx_dim + (-1,) + (1,) * (len(lora_delta.shape) - gate_idx_dim - 1))
+                        expand_index = expand_index.expand_as(lora_delta)
+                        result = torch.scatter_add(result, dim=gate_idx_dim, index=expand_index, src=lora_delta)
                         
                 else:
                     x = dropout(x)

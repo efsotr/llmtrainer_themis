@@ -88,18 +88,18 @@ def pad_fn(inputs, pad_token_id = 0):
     batch["eff_seqlens"] = (batch["labels"] != -100).int().sum(dim=1)
     if has_key(inputs, "gate"):
         seqlens = batch["attention_mask"].sum(1)
-        seqends = F.pad(torch.cumsum(seqlens), (1, 0))
+        seqends = F.pad(torch.cumsum(seqlens, 0), (1, 0))
         gates_idx = [[] for _ in range(8)]
         for i, gate in enumerate(get_key(inputs, "gate")):
             gate1 = gate_maping[gate[:2]]
             gate2 = gate_maping[gate[2:]]
             gates_idx[gate1].append(torch.arange(seqends[i], seqends[i+1]))
             gates_idx[gate2].append(torch.arange(seqends[i], seqends[i+1]))
-        gates_idx = [torch.cat(ex) for ex in gates_idx]
+        gates_idx = [torch.cat(ex) if ex != [] else torch.tensor([], dtype=torch.long) for ex in gates_idx]
         batch["gates_idx"] = gates_idx
 
     for arg in inputs[0].keys():
-        if arg in ["prompt", "response"]:
+        if arg in ["prompt", "response", "gate"]:
             continue
         values = get_key(inputs, arg)
         if arg == "prompt_id":
