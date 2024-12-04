@@ -56,7 +56,7 @@ def get_inputs(examples, name, split):
 
 len_fn = lambda ex: len(ex["prompt"]) + len(ex["response"])
 
-gate_maping = {"t1": 0, "t2": 1, "t3": 2, "t4": 3, "a1": 4, "a2": 5, "a3": 6, "a4": 7}
+gate_mapping = {"t1": 0, "t2": 1, "t3": 2, "t4": 3, "a1": 4, "a2": 5, "a3": 6, "a4": 7}
 
 def pad_fn(inputs, pad_token_id = 0):
     prompts = get_key(inputs, "prompt")
@@ -91,8 +91,8 @@ def pad_fn(inputs, pad_token_id = 0):
         seqends = F.pad(torch.cumsum(seqlens, 0), (1, 0))
         gates_idx = [[] for _ in range(8)]
         for i, gate in enumerate(get_key(inputs, "gate")):
-            gate1 = gate_maping[gate[:2]]
-            gate2 = gate_maping[gate[2:]]
+            gate1 = gate_mapping[gate[:2]]
+            gate2 = gate_mapping[gate[2:]]
             gates_idx[gate1].append(torch.arange(seqends[i], seqends[i+1]))
             gates_idx[gate2].append(torch.arange(seqends[i], seqends[i+1]))
         gates_idx = [torch.cat(ex) if ex != [] else torch.tensor([], dtype=torch.long) for ex in gates_idx]

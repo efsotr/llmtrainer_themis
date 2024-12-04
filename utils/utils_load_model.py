@@ -122,6 +122,7 @@ def load_model():
             model_args.peft_config.update({"task_type": "CAUSAL_LM"})
             peft_config = PeftConfig(**model_args.peft_config)
             model = PeftModelForCausalLM(model, peft_config)
+            model.peft_config['default'].peft_type = "LORA" # No implementation provided for save_pretrained, reverting to LORA
 
         if training_args.gradient_checkpointing:
             model.enable_input_require_grads()
