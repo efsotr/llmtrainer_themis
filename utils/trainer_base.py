@@ -15,7 +15,6 @@ from transformers.trainer import (
 )
 
 from .arguments import MaxTrainingArguments
-from optimized_module.recompute import frame
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -221,7 +220,6 @@ class BaseTrainer(Trainer):
             self.engine.optimizer.gradient_accumulation_steps = 2
             self.engine.set_gradient_accumulation_boundary(False)
             for _ in range(len(inputs) - 1):
-                frame.clear()
                 loss = self.compute_train_loss(model, inputs[_], **self.nums_div)
                 self.accelerator.backward(loss)
                 t_loss += loss.item()
@@ -230,7 +228,6 @@ class BaseTrainer(Trainer):
         else:
             self.engine.optimizer.gradient_accumulation_steps = 1
 
-        frame.clear()
         loss = self.compute_train_loss(model, inputs[-1], **self.nums_div)
         self.accelerator.backward(loss)
         t_loss += loss.item()

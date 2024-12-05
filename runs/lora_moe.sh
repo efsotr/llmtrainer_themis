@@ -1,4 +1,4 @@
-LORA_CONFIG='{"peft_type": "LORA_MOE", "r": 16, "num_gates": 8, "use_dora": false, "lora_alpha": 32, "target_modules": ["q_proj", "v_proj", "down_proj"], "lora_dropout": 0}'
+LORA_CONFIG='{"peft_type": "LORA_MOE", "r": 16, "num_gates": 8, "use_dora": false, "lora_alpha": 32, "target_modules": ["q_proj", "v_proj", "down_proj"], "lora_dropout": 0.05}'
 
 mkdir -p $1
 
@@ -41,5 +41,5 @@ OMP_NUM_THREADS=8 accelerate launch --main_process_port "$PORT" --config_file ./
     --max_length 4096 \
     --seed 0 \
     --run_name $(basename $1) \
-    --report_to wandb \
+    --report_to none \
     > $1/training.log 2>&1 

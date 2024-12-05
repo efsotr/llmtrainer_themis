@@ -600,12 +600,12 @@ class Linear(nn.Module, LoraMoeLayer):
                     assert len(gates_idx) == len(lora_As)
                     assert len(gates_idx) == len(lora_Bs)
                     for i in range(len(gates_idx)):
+                        if gates_idx[i].numel() == 0:
+                            continue
                         x_sub = EffIndexSelectFn(x_dropout, dim=gate_idx_dim, index=gates_idx[i])
                         im = lora_As[i](x_sub)
                         lora_delta = lora_Bs[i](im) * scaling
-                        expand_index = gates_idx[i].reshape((1,) * gate_idx_dim + (-1,) + (1,) * (len(lora_delta.shape) - gate_idx_dim - 1))
-                        expand_index = expand_index.expand_as(lora_delta)
-                        result = torch.scatter_add(result, dim=gate_idx_dim, index=expand_index, src=lora_delta)
+                        result = torch.index_add(result, dim=gate_idx_dim, index=gates_idx[i], source=lora_delta)
                         
                 else:
                     x = dropout(x)
