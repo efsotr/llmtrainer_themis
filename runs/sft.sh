@@ -8,24 +8,22 @@ OMP_NUM_THREADS=8 accelerate launch --main_process_port "$PORT" --config_file ./
     --torch_dtype bfloat16 \
     --bf16 \
     --formated_train_data_cache_path ./cache_ids/${DATA_NAME}.train.json.gz \
-    --formated_dev_data_cache_path ./cache_ids/${DATA_NAME}.dev.json \
     --prompt_type chat \
     --remove_unused_columns 0 \
     --do_train \
-    --do_eval \
     --check_stage no_ck \
     --training_type sft \
     --optim adamw_torch \
     --learning_rate $LR \
     --weight_decay 0 \
-    --lr_scheduler_type cosine \
-    --warmup_ratio 0.1 \
+    --lr_scheduler_type inverse_sqrt \
+    --warmup_ratio 0.01 \
     --per_deivce_train_batch_max_tokens $per_deivce_train_batch_max_tokens \
     --batch_tokens_divider $batch_tokens_divider \
     --h_accumulation_steps $h_accumulation_steps \
     --per_device_eval_batch_size 8 \
     --per_device_train_batch_size 1 \
-    --eval_strategy steps \
+    --eval_strategy no \
     --eval_steps 0.1 \
     --save_strategy epoch \
     --save_only_model 1 \
@@ -34,7 +32,7 @@ OMP_NUM_THREADS=8 accelerate launch --main_process_port "$PORT" --config_file ./
     --logging_steps 1 \
     --include_tokens_per_second \
     --output_dir $1 \
-    --num_train_epochs 1 \
+    --num_train_epochs $num_epochs \
     --max_length 4096 \
     --seed 0 \
     --run_name $(basename $1) \
