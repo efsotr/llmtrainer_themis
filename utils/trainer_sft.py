@@ -43,8 +43,9 @@ def get_inputs(examples, name, split):
             "prompt": prompt, 
             "response": response,
         })
-        if model_args.use_lora_moe:
+        if model_args.use_lora_moe or model_args.use_lora_moe2:
             inputs[-1]["gate"] = ex["gate"]
+            inputs[-1]["lora_moe_flag"] = 1 if model_args.use_lora_moe else 2
 
     if training_args.local_rank == 0:
         logger.info(f"{split} {name} dataset samples")
@@ -87,6 +88,7 @@ def pad_fn(inputs, pad_token_id = 0):
     batch["position_ids"] = torch.arange(0, max_len)[None].repeat(len(prompts), 1)
     batch["eff_seqlens"] = (batch["labels"] != -100).int().sum(dim=1)
     if has_key(inputs, "gate"):
+        lora_moe_flag = inputs[0]["lora_moe_flag"]
         seqlens = batch["attention_mask"].sum(1)
         seqends = F.pad(torch.cumsum(seqlens, 0), (1, 0))
         gates_idx = [[] for _ in range(8)]
@@ -94,7 +96,14 @@ def pad_fn(inputs, pad_token_id = 0):
             gate1 = gate_mapping[gate[:2]]
             gate2 = gate_mapping[gate[2:]]
             gates_idx[gate1].append(torch.arange(seqends[i], seqends[i+1]))
-            gates_idx[gate2].append(torch.arange(seqends[i], seqends[i+1]))
+            if lora_moe_flag == 2 and gate2 >= 6:
+                if gate2 == 6:
+                    gates_idx[5].append(torch.arange(seqends[i], seqends[i+1]))
+                if gate2 == 7:
+                    gates_idx[4].append(torch.arange(seqends[i], seqends[i+1]))
+                    gates_idx[5].append(torch.arange(seqends[i], seqends[i+1]))
+            else:
+                gates_idx[gate2].append(torch.arange(seqends[i], seqends[i+1]))
         gates_idx = [torch.cat(ex) if ex != [] else torch.tensor([], dtype=torch.long) for ex in gates_idx]
         batch["gates_idx"] = gates_idx
 

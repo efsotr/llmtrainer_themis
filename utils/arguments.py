@@ -44,6 +44,9 @@ class ModelArguments:
     use_lora_moe: bool = field(
         default=False
     )
+    use_lora_moe2: bool = field(
+        default=False
+    )
     peft_model_id: str = field(
         default=None,
         metadata={"help": "The peft model checkpoint for peft weights initialization."}

@@ -1,8 +1,13 @@
+LORA_CONFIG='{"peft_type": "LORA_MOE", "r": 16, "num_gates": 6, "use_dora": false, "lora_alpha": 32, "target_modules": ["q_proj", "v_proj", "down_proj"], "lora_dropout": 0.05}'
+
 mkdir -p $1
 
-OMP_NUM_THREADS=8 accelerate launch --main_process_port "$PORT" --config_file ./configs/deepspeed_4gpus_stage2_off_o.yaml \
+OMP_NUM_THREADS=8 accelerate launch --main_process_port "$PORT" --config_file ./configs/deepspeed_4gpus_stage0.yaml \
      ./train.py \
     --model_id ./models/$MODEL_NAME \
+    --use_peft 1 \
+    --use_lora_moe2 1 \
+    --peft_config "$LORA_CONFIG" \
     --with_efficient_module optimized_module \
     --gradient_checkpointing ${gradient_checkpointing:-1} \
     --torch_dtype bfloat16 \
@@ -36,5 +41,5 @@ OMP_NUM_THREADS=8 accelerate launch --main_process_port "$PORT" --config_file ./
     --max_length 4096 \
     --seed 0 \
     --run_name $(basename $1) \
-    --report_to wandb \
+    --report_to none \
     > $1/training.log 2>&1 
