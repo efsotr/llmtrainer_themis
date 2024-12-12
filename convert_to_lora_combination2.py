@@ -10,8 +10,6 @@ output_dir = dir
 peft_config = json.load(open(os.path.join(dir, "adapter_config.json")))
 peft_params = load_file(os.path.join(dir, "adapter_model.safetensors"))
 peft_config.pop("num_gates")
-# peft_config["lora_alpha"] *= 2
-# peft_config["r"] *= 2
 
 keys = list(set(['.'.join(k.split('.')[:-2]) for k in peft_params.keys()]))
 gate_mapping = {"t1": 0, "t2": 1, "t3": 2, "t4": 3, "a1": 4, "a2": 5, "a3": 6, "a4": 7}
