@@ -69,7 +69,7 @@ if __name__ == '__main__':
     parser.add_argument('--prompt_type', required=True, type=str, choices=["chat", "completion"])
     parser.add_argument('--seed', default=0, type=int)
     parser.add_argument('--max_loras', default=16, type=int)
-    parser.add_argument('--max_lora_rank', default=32, type=int)
+    parser.add_argument('--max_lora_rank', default=64, type=int)
     parser.add_argument('--cache_dir', default=None, type=str)
     parser.add_argument('--prefix_dir', default=None, type=str)
     args = parser.parse_args(namespace=Namespace())
